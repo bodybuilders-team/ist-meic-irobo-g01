@@ -36,6 +36,6 @@
   </node>
 
   <!-- rviz -->
-  <node pkg="rviz" type="rviz" name="rviz" required="true"  args="-d $(find ist-meic-irobot-g01)/rviz/turtlebot3_gmapping.rviz"/>
+  <node pkg="rviz" type="rviz" name="rviz" required="true"  args="-d $(find ist-meic-irobo-g01)/rviz/gmapping_provided_dataset.rviz"/>
 
 </launch>

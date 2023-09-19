@@ -2,20 +2,21 @@
   <!-- Arguments -->
   <arg name="model" default="waffle_pi" />
   <arg name="bag_name" default="fixed_slam_easy" />
+  <arg name="map_file" default="$(find ist-meic-irobo-g01)/maps/map.yaml" />
+  <arg name="move_forward_only" default="false" />
+  <arg name="tf2_map2odom" default="0 0 0 0 0 0 map odom" />
+  <arg name="tf2_base_scan2base_link" default="0 0 0 0 0 0 base_link base_scan" />
 
   <!-- Turtlebot3 -->
-  <include file="$(find turtlebot3_bringup)/launch/turtlebot3_remote.launch">
+  <include
+    file="$(find turtlebot3_bringup)/launch/turtlebot3_remote.launch">
     <arg name="model" value="$(arg model)" />
   </include>
 
   <!-- Rosbag -->
   <param name="/use_sim_time" value="true" />
   <node pkg="rosbag" type="play" name="rosbag_player"
-    args="--clock $(find ist-meic-irobot-g01)/data/$(arg bag_name).bag" />
-
-  <!-- Arguments -->
-  <arg name="map_file" default="$(find ist-meic-irobot-g01)/maps/map.yaml" />
-  <arg name="move_forward_only" default="false" />
+    args="--clock $(find ist-meic-irobo-g01)/data/$(arg bag_name).bag" />
 
   <!-- Map server -->
   <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)" />
@@ -55,23 +56,38 @@
   </node>
 
   <!-- rviz -->
-  <node pkg="rviz" type="rviz" name="rviz" required="true"
-    args="-d $(find ist-meic-irobot-g01)/rviz/localization_provided_dataset.rviz" />
+  <node pkg="rviz" type="rviz" name="rviz" required="true" args="-d $(find ist-meic-irobo-g01)/rviz/localization_provided_dataset.rviz"/>
 
   <!-- tf2 -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="tf2_map2odom" required="true"
+       args="$(arg tf2_map2odom)"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="tf2_base_scan2base_link" required="true"
+       args="$(arg tf2_base_scan2base_link)"/>
+
+  <!--<node
+    pkg="tf2_ros" type="static_transform_publisher" name="broadcaster"
+    args="0.935 1.34 -0.023 0.001 -0.003 0.737 0.676 mocap odom" />
+  <node pkg="tf2_ros"
+    type="static_transform_publisher" name="odom2base_footprint"
+    args="0 0 0 0 0 0 odom base_footprint" />
+  <node pkg="tf2_ros" type="static_transform_publisher"
+    name="base_link_broadcaster"
+    args="0 0 0 0 0 0 base_footprint base_link" />
+  <node
+    pkg="tf2_ros" type="static_transform_publisher" name="broadcaster"
+    args="0.935 1.34 -0.023 0.001 -0.003 0.737 0.676 mocap map" />
+  <node
+    pkg="tf2_ros" type="static_transform_publisher" name="broadcaster"
+    args="0.935 1.34 -0.023 0.001 -0.003 0.737 0.676 mocap map" />
   <node pkg="tf2_ros" type="static_transform_publisher" name="tf2_map2odom" required="true"
     args="0 0 0 0 0 0 map odom" />
   <node pkg="tf2_ros" type="static_transform_publisher" name="tf2_base_scan2base_link"
     required="true"
     args="0 0 0 0 0 0 base_link base_scan" />
-    
-  <!--ADDED THIS TO FIX AN ERROR IN TF TREE-->
   <node pkg="tf2_ros" type="static_transform_publisher" name="odom2base_footprint"
     args="0 0 0 0 0 0 odom base_footprint" />
 
   <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_broadcaster"
-    args="0 0 0 0 0 0 base_footprint base_link" />
-  <!--<node
-  pkg="tf2_ros" type="static_transform_publisher" name="broadcaster"
-    args="0.935 1.34 -0.023 0.001 -0.003 0.737 0.676 mocap odom" />-->
+    args="0 0 0 0 0 0 base_footprint base_link" />-->
+
 </launch>
