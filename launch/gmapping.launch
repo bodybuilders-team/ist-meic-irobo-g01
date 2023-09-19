@@ -7,10 +7,11 @@
     <include file="$(find turtlebot3_bringup)/launch/turtlebot3_remote.launch">
         <arg name="model" value="$(arg model)" />
     </include>
+    
     <!-- Rosbag -->
     <param name="/use_sim_time" value="true"/>
      <node pkg="rosbag" type="play" name="rosbag_player" 
-          args="--clock $(find minilab_1)/data/$(arg bag_name).bag"/>
+          args="--clock $(find ist-meic-irobot-g01)/data/$(arg bag_name).bag"/>
 
     <!-- TF2 -->
     <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_broadcaster"  args="0 0 0 0 0 0 /base_footprint /base_link"/>
@@ -22,5 +23,5 @@
         <param name="map_frame" value="map"/>
     </node>
      <!-- rviz -->
-    <node pkg="rviz" type="rviz" name="rviz" required="true"  args="-d $(find minilab_1)/rviz/turtlebot3_gmapping.rviz"/>
+    <node pkg="rviz" type="rviz" name="rviz" required="true"  args="-d $(find ist-meic-irobot-g01)/rviz/turtlebot3_gmapping.rviz"/>
 </launch>

@@ -20,3 +20,10 @@ Professor: Rita Cunha
 Master in Computer Science and Computer Engineering<br>
 Introduction to Robotics - Group 01<br>
 Winter Semester of 2023/2024
+
+---
+
+## Mini Project 1
+
+* `roslaunch ist_meic_irobo_g01 turtlebot3_playbag.launch` - Provided dataset;
+* `roslaunch ist_meic_irobo_g01 gmapping.launch` - SLAM algorithm for the hallway map; 
