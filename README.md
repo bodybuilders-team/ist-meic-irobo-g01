@@ -25,5 +25,10 @@ Winter Semester of 2023/2024
 
 ## Mini Project 1
 
-* `roslaunch ist_meic_irobo_g01 turtlebot3_playbag.launch` - Provided dataset;
-* `roslaunch ist_meic_irobo_g01 gmapping.launch` - SLAM algorithm for the hallway map; 
+The following launch files are available:
+
+* `gmapping.launch` - Maps the hallway;
+* `gmapping_provided_dataset.launch` - Maps the provided dataset;
+* `localization.launch` - Localizes the robot in the hallway;
+* `localization_provided_dataset.launch` - Localizes the robot in the provided dataset;
+* `navigation.launch` - Navigates the robot in the hallway;
