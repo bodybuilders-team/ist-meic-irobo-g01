@@ -160,11 +160,77 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
+    - Class: rviz/TF
+      Enabled: true
+      Filter (blacklist): ""
+      Filter (whitelist): ""
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+        base_footprint:
+          Value: true
+        base_link:
+          Value: true
+        base_scan:
+          Value: true
+        camera_link:
+          Value: true
+        camera_rgb_frame:
+          Value: true
+        camera_rgb_optical_frame:
+          Value: true
+        caster_back_left_link:
+          Value: true
+        caster_back_right_link:
+          Value: true
+        imu_link:
+          Value: true
+        mocap:
+          Value: true
+        mocap_laser_link:
+          Value: true
+        odom:
+          Value: true
+        wheel_left_link:
+          Value: true
+        wheel_right_link:
+          Value: true
+      Marker Alpha: 1
+      Marker Scale: 1
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+      Tree:
+        mocap:
+          mocap_laser_link:
+            {}
+          odom:
+            base_footprint:
+              base_link:
+                base_scan:
+                  {}
+                camera_link:
+                  camera_rgb_frame:
+                    camera_rgb_optical_frame:
+                      {}
+                caster_back_left_link:
+                  {}
+                caster_back_right_link:
+                  {}
+                imu_link:
+                  {}
+                wheel_left_link:
+                  {}
+                wheel_right_link:
+                  {}
+      Update Interval: 0
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
     Default Light: true
-    Fixed Frame: map
+    Fixed Frame: mocap
     Frame Rate: 30
   Name: root
   Tools:
@@ -224,5 +290,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1848
-  X: 1992
+  X: 72
   Y: 27
