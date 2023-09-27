@@ -21,7 +21,7 @@
   <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)" />
 
   <!-- ekf_localization_node -->
-  <include file="$(find robot_localization)/launch/ekf.launch"/>
+  <!-- <include file="$(find robot_localization)/launch/ekf.launch"/> -->
   
   <node pkg="rviz" type="rviz" name="rviz" required="true"
     args="-d $(find ist-meic-irobo-g01)/rviz/localization.rviz" />
