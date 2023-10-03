@@ -1,9 +1,9 @@
 <launch>
-    <include file="$(find turtlebot3_gazebo)/launch/turtlebot3_world.launch"/>
-    <node pkg="rviz" type="rviz" name="rviz" required="true"
-    args="-d $(find ist-meic-irobo-g01)/rviz/turtle_sim_ekf.rviz" />
+  <include file="$(find turtlebot3_gazebo)/launch/turtlebot3_world.launch"/>
+  <node pkg="rviz" type="rviz" name="rviz" required="true"
+  args="-d $(find ist-meic-irobo-g01)/rviz/turtle_sim_ekf.rviz" />
 
-    <!-- Arguments -->
+  <!-- Arguments -->
   <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
   <arg name="map_file" default="$(find turtlebot3_navigation)/maps/map.yaml"/>
   <arg name="move_forward_only" default="false"/>
@@ -48,10 +48,9 @@
 	
   <!-- tf2 -->
   <node pkg="tf2_ros" type="static_transform_publisher" name="tf2_map2odom" required="true"
-       args="$(arg tf2_map2odom)"/>
+      args="$(arg tf2_map2odom)"/>
   <node pkg="tf2_ros" type="static_transform_publisher" name="tf2_base_scan2base_link" required="true"
-       args="$(arg tf2_base_scan2base_link)"/>
-       <node pkg="tf2_ros" type="static_transform_publisher" name="tf2_base_footprint2base_scan" required="true"
-       args="0 0 0 0 0 0 base_footprint base_scan"/>
-
+      args="$(arg tf2_base_scan2base_link)"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="tf2_base_footprint2base_scan" required="true"
+      args="0 0 0 0 0 0 base_footprint base_scan"/>
 </launch>

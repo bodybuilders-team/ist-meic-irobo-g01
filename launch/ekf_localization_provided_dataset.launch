@@ -23,24 +23,23 @@
     <rosparam command="load" file="$(find ist-meic-irobo-g01)/params/ekf.yaml" />
   </node>
 
-<node pkg="hector_trajectory_server" type="hector_trajectory_server" name="mocap_trajectory_server">
-  <param name="source_frame_name" value="mocap_laser_link"/>
-  <param name="trajectory_update_rate" value="30"/>
-  <param name="trajectory_publish_rate" value="30"/>
-  <remap from="trajectory" to="mocap_trajectory"/>
-</node>
-<node pkg="hector_trajectory_server" type="hector_trajectory_server" name="localization_trajectory_server">
-  <param name="source_frame_name" value="base_scan"/>
-  <param name="trajectory_update_rate" value="30"/>
-  <param name="trajectory_publish_rate" value="30"/>
-</node>
-<!-- rviz -->
-  <node pkg="rviz" type="rviz" name="rviz" required="true" args="-d $(find ist-meic-irobo-g01)/rviz/localization_provided_dataset.rviz"/>
+  <node pkg="hector_trajectory_server" type="hector_trajectory_server" name="mocap_trajectory_server">
+    <param name="source_frame_name" value="mocap_laser_link"/>
+    <param name="trajectory_update_rate" value="30"/>
+    <param name="trajectory_publish_rate" value="30"/>
+    <remap from="trajectory" to="mocap_trajectory"/>
+  </node>
+  <node pkg="hector_trajectory_server" type="hector_trajectory_server" name="localization_trajectory_server">
+    <param name="source_frame_name" value="base_scan"/>
+    <param name="trajectory_update_rate" value="30"/>
+    <param name="trajectory_publish_rate" value="30"/>
+  </node>
+  
+  <!-- rviz -->
+  <node pkg="rviz" type="rviz" name="rviz" required="true" args="-d $(find ist-meic-irobo-g01)/rviz/ekf_localization_provided_dataset.rviz"/>
 
   <!-- tf2 -->
   <node pkg="tf2_ros" type="static_transform_publisher" name="tf2_map2odom" required="true"
   args="0 0 0 0 0 0 map odom"/>
-
   <node pkg="tf2_ros" type="static_transform_publisher" name="tf2_mocap2odom" args="0.935 1.34 -0.023 0.001 -0.003 0.737 0.676 mocap map"/>
-
 </launch>
