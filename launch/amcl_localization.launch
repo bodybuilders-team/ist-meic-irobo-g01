@@ -25,19 +25,24 @@
         <param name="initial_pose_y" value="$(arg initial_pose_y)" />
         <param name="initial_pose_a" value="$(arg initial_pose_a)" /> -->
 
-        <param name="initial_pose_x" value="-9.8" />
+        <param name="initial_pose_x" value="-9.4" />
         <param name="initial_pose_y" value="1.8" />
         <param name="initial_pose_a" value="1.3" />
 
         <param name="initial_cov_xx" value="2.0 * 2.0 meters" />
         <param name="initial_cov_yy" value="2.0 * 2.0 meters" />
 
-        <param name="min_particles" value="100" />
-        <param name="max_particles" value="100" />
+        <param name="min_particles" value="500" />
+        <param name="max_particles" value="5000" />
 
         <param name="odom_frame_id" value="odom" />
         <param name="base_frame_id" value="base_footprint" />
+    </node>
 
+    <node pkg="hector_trajectory_server" type="hector_trajectory_server" name="localization_trajectory_server">
+        <param name="source_frame_name" value="base_scan"/>
+        <param name="trajectory_update_rate" value="30"/>
+        <param name="trajectory_publish_rate" value="30"/>
     </node>
 
     <!-- Map server -->
