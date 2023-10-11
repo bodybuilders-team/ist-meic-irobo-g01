@@ -17,41 +17,18 @@ import tf2_py as tf2
 import tf2_geometry_msgs
 import sympy as sp
 
-# a, b, x0, y0, x1, y1, theta, alpha = sp.symbols("a b x0 y0 x1 y1 theta alpha")
-
-# # Calculated by applying the rotation matrix to the parametric equations of an ellipse
-# x_rot = (a*sp.cos(theta)*sp.cos(alpha)) - (b*sp.sin(theta)*sp.sin(alpha)) + x0 
-# y_rot = (a*sp.cos(theta)*sp.sin(alpha)) + (b*sp.sin(theta)*sp.cos(alpha)) + y0
-
-# d_squared = ((x_rot - x1)**2)+((y_rot-y1)**2)
-
-# d_squared_derivative = d_squared.diff(theta)
-
 
 tf_buffer: Buffer = None
-fixed_frame = "mocap"
 time_data = []
 error_data = []
 initial_time = None
-gt_frame = None
-gt_frame = None
 est_pose_data = []
 ellipse_data = []
 gt_pose_data = []
 lower_bound_pose_data = []
 upper_bound_pose_data = []
-
-
-# def extrema_to_ellipse(gt_tf: TransformStamped, uncertainty_ellipse: tuple):
-#     (a, b, rotation, x0, y0) = uncertainty_ellipse
-#     gt_trans = gt_tf.transform.translation
-#     (x1, y1) = (gt_trans.x, gt_trans.y)
-#     print(gt_trans)
-#     d_squared_derivative_substituted = d_squared_derivative.subs({x0:x0,y0:y0,a:a,b:b,x1:x1,y1:y1, alpha:rotation})
-#     solutions = sp.solve(d_squared_derivative_substituted, theta)
-
-#     print(f"Solutions = {solutions}")
-#     return ( )
+x_rot_data = []
+y_rot_data = []
 
 def extrema_to_ellipse(gt_tf: TransformStamped, uncertainty_ellipse: tuple):
     (a, b, alpha, x0, y0) = uncertainty_ellipse
@@ -60,11 +37,12 @@ def extrema_to_ellipse(gt_tf: TransformStamped, uncertainty_ellipse: tuple):
     # Generate points on the ellipse before rotation
     theta = np.linspace(0, 2 * np.pi, 1000)
 
-    global x_rot, y_rot
-    
-    # Rotate the ellipse alpha degrees counterclockwise
+    # Rotate the ellipse alpha degrees counter tf_listener = clockwise
     x_rot = (a*np.cos(theta)*np.cos(alpha)) - (b*np.sin(theta)*np.sin(alpha)) + x0 
     y_rot = (a*np.cos(theta)*np.sin(alpha)) + (b*np.sin(theta)*np.cos(alpha)) + y0
+
+    x_rot_data.append(x_rot)
+    y_rot_data.append(y_rot)
 
     # Calculate the distances between point a and the points on the ellipse
     distances = np.sqrt((x_rot - x1)**2 + (y_rot - y1)**2)
@@ -78,42 +56,50 @@ def extrema_to_ellipse(gt_tf: TransformStamped, uncertainty_ellipse: tuple):
     max_x = x_rot[max_i]
     max_y = y_rot[max_i]
 
-    min_pose = PoseStamped()
-    min_pose.pose.position.x = min_x
-    min_pose.pose.position.y = min_y
+    min_pose = TransformStamped()
+    min_pose.transform.translation.x = min_x
+    min_pose.transform.translation.y = min_y
 
-    max_pose = PoseStamped()
-    max_pose.pose.position.x = max_x
-    max_pose.pose.position.y = max_y
+    max_pose = TransformStamped()
+    max_pose.transform.translation.x = max_x
+    max_pose.transform.translation.y = max_y
 
-    return (min_pose, max_pose)
+    return (min_pose, max_pose, x_rot, y_rot)
 
-def calculate_error(gt_tf: TransformStamped, pose: PoseStamped):
-    dx = gt_tf.transform.translation.x - pose.pose.position.x
-    dy = gt_tf.transform.translation.y - pose.pose.position.y
+def calculate_distance(gt_tf: TransformStamped, est_tf: TransformStamped):
+    dx = gt_tf.transform.translation.x - est_tf.transform.translation.x
+    dy = gt_tf.transform.translation.y - est_tf.transform.translation.y
     return np.sqrt(dx**2 + dy**2)
 
-def calculate_bounded_error(gt_tf, pose, uncertainty_ellipse, bf2bs_tf):
-    (lower_bound_pose, higher_bound_pose) = extrema_to_ellipse(gt_tf, uncertainty_ellipse)
+def calculate_bounded_error(gt_tf, est_tf, uncertainty_ellipse):
+    global tf_buffer, gt_frame, initial_time, time_data, error_data, est_pose_data, gt_pose_data, ellipse_data
+    (lower_bound_pose, higher_bound_pose, x_rot, y_rot) = extrema_to_ellipse(gt_tf, uncertainty_ellipse)
 
-    lower_bound_pose_data.append([lower_bound_pose.pose.position.x, lower_bound_pose.pose.position.y])
-    upper_bound_pose_data.append([higher_bound_pose.pose.position.x, higher_bound_pose.pose.position.y])
+    error = calculate_distance(gt_tf, est_tf) *1e3
+    lower_bound_error = calculate_distance(gt_tf, lower_bound_pose) * 1e3
+    higher_bound_error = calculate_distance(gt_tf, higher_bound_pose) * 1e3
+    
+    return ((lower_bound_pose, higher_bound_pose), (x_rot, y_rot), (lower_bound_error, error, higher_bound_error))
 
-    pose = tf2_geometry_msgs.do_transform_pose(pose, bf2bs_tf)
-    lower_bound_pose = tf2_geometry_msgs.do_transform_pose(lower_bound_pose, bf2bs_tf)
-    higher_bound_pose = tf2_geometry_msgs.do_transform_pose(higher_bound_pose, bf2bs_tf)
-
-    error = calculate_error(gt_tf, pose) *1e3
-    lower_bound_error = calculate_error(gt_tf, lower_bound_pose) * 1e3
-    higher_bound_error = calculate_error(gt_tf, higher_bound_pose) * 1e3
-
-    return (lower_bound_error, error, higher_bound_error)
+def is_within_ellipse(tf: TransformStamped, ellipse) -> bool:
+    x, y = tf.transform.translation.x, tf.transform.translation.y
+    a, b, theta, x0, y0 = ellipse
+    cos_theta, sin_theta = np.cos(theta), np.sin(theta)
+    x_hat = cos_theta * (x - x0) + sin_theta * (y - y0)
+    y_hat = -sin_theta * (x - x0) + cos_theta * (y - y0)
+    return (x_hat / a) ** 2 + (y_hat / b) ** 2 <= 1
 
 def odometry_callback(data: Odometry):
-    global tf_buffer, gt_frame, initial_time, time_data, error_data, est_pose_data, gt_pose_data, ellipse_data
+    global tf_buffer, initial_time, time_data, error_data, est_pose_data, gt_pose_data, ellipse_data, x_rot_data, y_rot_data
 
-    gt_tf: TransformStamped = tf_buffer.lookup_transform(gt_frame, fixed_frame,time=rospy.Time(0)) #TODO: must be sourced from the odom frame time stamp
-    bf2bs_tf = tf_buffer.lookup_transform(data.child_frame_id, "base_scan", time=rospy.Time(0), timeout=rospy.Duration(0.01))
+    try:
+        gt_tf: TransformStamped = tf_buffer.lookup_transform("mocap", "mocap_laser_link", time=data.header.stamp) #TODO: must be sourced from the odom frame time stamp
+        # Get time from data
+        est_tf: TransformStamped = tf_buffer.lookup_transform("mocap", "base_scan",time= data.header.stamp)
+    except tf2.ExtrapolationException:
+        return
+    
+    curr_time = rospy.get_time()
 
     matrix = np.mat(data.pose.covariance)
     matrix = matrix.reshape(6,6)
@@ -123,36 +109,39 @@ def odometry_callback(data: Odometry):
     eigenorder = eigenvalues.argsort()[::-1]
     eigenvalues, eigenvectors = eigenvalues[eigenorder], eigenvectors[:, eigenorder]
     
-    pose: PoseWithCovariance = data.pose
-
     a, b = tuple(2*np.sqrt(eigenvalues)) # 95% probability
-    x0, y0 = (pose.pose.position.x, pose.pose.position.y)
+    x0, y0 = (est_tf.transform.translation.x, est_tf.transform.translation.y)
     ellipse_rotation = np.arctan2(*eigenvectors[:, 0][::-1]).item()
     uncertainty_ellipse = (a, b, ellipse_rotation, x0, y0) # a, b, x0, y0
 
-    bounded_error = calculate_bounded_error(gt_tf, pose, uncertainty_ellipse, bf2bs_tf)
+    (bound_pose, ellipse_rot, bounded_error) = calculate_bounded_error(gt_tf, est_tf, uncertainty_ellipse)
 
-    curr_time = rospy.get_time()
+    (x_rot, y_rot) =ellipse_rot
+    (lower_bound_pose, higher_bound_pose) = bound_pose
 
-    if(bounded_error[0] > bounded_error[1] or bounded_error[2] < bounded_error[1]):
-        print("ALERTTTTTT: ", bounded_error)
-    else:
-        time_data.append(curr_time-initial_time)
-        error_data.append(bounded_error)
-        est_pose_data.append([pose.pose.position.x, pose.pose.position.y])
-        gt_pose_data.append([gt_tf.transform.translation.x, gt_tf.transform.translation.y])
+    (lower_bound_error, error, higher_bound_error) = bounded_error
+    
+    # TODO: use within ellipse function and not within circle...
+    if(calculate_distance(gt_tf, est_tf) < a): # Assuming ellipse is a circle...
+        lower_bound_pose = gt_tf
+        lower_bound_error = 0
+        print("WITHIN ELLIPSE")
+    
+    if(lower_bound_error > error or higher_bound_error < error):
+        print("ALERTTTTTT")
+
+    time_data.append(curr_time-initial_time)
+    est_pose_data.append([est_tf.transform.translation.x, est_tf.transform.translation.y])
+    gt_pose_data.append([gt_tf.transform.translation.x, gt_tf.transform.translation.y])
+    error_data.append((lower_bound_error, error, higher_bound_error))
+    lower_bound_pose_data.append([lower_bound_pose.transform.translation.x, lower_bound_pose.transform.translation.y])
+    upper_bound_pose_data.append([higher_bound_pose.transform.translation.x, higher_bound_pose.transform.translation.y])
+    x_rot_data.append(x_rot)
+    y_rot_data.append(y_rot)
 
 
 def main():
-    global tf_buffer, gt_frame, initial_time, time_data, error_data, est_pose_data, gt_pose_data, ellipse_data, x_rot, y_rot
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--gt_frame', help='The child frame of the GT transform', default='mocap_laser_link')
-    parser.add_argument('--est_topic', help='The odometry topic of the estimation', default='/odometry/filtered')
-
-    args = parser.parse_args()
-
-    gt_frame = args.gt_frame
-    est_topic = args.est_topic
+    global tf_buffer, gt_frame, initial_time, time_data, error_data, est_pose_data, gt_pose_data, ellipse_data, x_rot_data, y_rot_data
 
     rospy.init_node('evaluation_node')
 
@@ -170,7 +159,7 @@ def main():
     tf_buffer = Buffer(cache_time=rospy.Duration(20))
     tf_listener = TransformListener(tf_buffer)
 
-    sub = rospy.Subscriber(est_topic, Odometry, odometry_callback)
+    sub = rospy.Subscriber("odometry/filtered", Odometry, odometry_callback, buff_size=1)
 
     print(tf_buffer)
     try:
@@ -182,13 +171,14 @@ def main():
     # plt.plot([gt_pose_data[10][0]] , [gt_pose_data[10][1]])
     # plt.show() 
 
+    # TODO: Change to uncertainty graph
     plt.title("Elipse at time %.2f seconds" % time_data[-1])
     plt.ylabel("y coordinate (m)")
     plt.xlabel("x coordinate (m)")
     plt.axis('equal')
-    plt.plot(x_rot, y_rot, label='Covariance ellipse')
+    plt.plot(x_rot_data[-1], y_rot_data[-1], label='Covariance ellipse')
     print("\n Timestamp: ", time_data[-1] + initial_time)
-    print("\n Ground thruth: ", est_pose_data[-1][0], est_pose_data[-1][1])
+    print("\n Ground thruth: ", gt_pose_data[-1][0], gt_pose_data[-1][1])
     plt.plot(gt_pose_data[-1][0] , [gt_pose_data[-1][1]], 'ro', label='Ground truth')
     print("\n Estimated ", est_pose_data[-1][0] , est_pose_data[-1][1])
     plt.plot(est_pose_data[-1][0], [est_pose_data[-1][1]], 'go', label='Estimated position')
@@ -199,10 +189,21 @@ def main():
     plt.legend(loc='best')
     plt.show() 
 
+    lower_bound_errors = [e[0] for e in error_data]
+    errors = [e[1] for e in error_data]
+    upper_bound_errors = [e[2] for e in error_data]
+
     plt.title("Mocap vs Estimation Error")
     plt.ylabel("Distance (mm)")
     plt.xlabel("Time (Seconds)")
-    plt.plot(time_data, error_data)
+    
+    # TODO: Change
+    # Plot each error type with a specific label
+    plt.plot(time_data, lower_bound_errors, label='Lower bound error')
+    plt.plot(time_data, errors, label='Error')
+    plt.plot(time_data, upper_bound_errors, label='Upper bound error')
+    
+    plt.legend(loc='best')
     plt.show() 
 
 if __name__ == "__main__":
