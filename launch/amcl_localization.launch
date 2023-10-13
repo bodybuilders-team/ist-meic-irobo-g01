@@ -1,0 +1,65 @@
+<launch>
+    <!-- Arguments -->
+    <arg name="model" default="waffle_pi" />
+    <arg name="bag_name" default="hallway" />
+    <arg name="map_file" default="$(find ist-meic-irobo-g01)/maps/hallway.yaml" />
+    <arg name="open_rviz" default="true" />
+    <arg name="move_forward_only" default="false" />
+    <arg name="initial_pose_x" default="-10.30802059173584" />
+    <arg name="initial_pose_y" default="3.28527569770813" />
+    <arg name="initial_pose_a" default="1.4415187" />
+
+    <!-- Turtlebot3 -->
+    <include file="$(find turtlebot3_bringup)/launch/turtlebot3_remote.launch">
+        <arg name="model" value="$(arg model)" />
+    </include>
+
+    <!-- Rosbag -->
+    <param name="/use_sim_time" value="true" />
+    <node pkg="rosbag" type="play" name="rosbag_player"
+        args="--clock $(find ist-meic-irobo-g01)/data/$(arg bag_name).bag" />
+
+    <!-- AMCL -->
+    <node pkg="amcl" type="amcl" name="amcl">
+        <!-- <param name="initial_pose_x" value="$(arg initial_pose_x)" />
+        <param name="initial_pose_y" value="$(arg initial_pose_y)" />
+        <param name="initial_pose_a" value="$(arg initial_pose_a)" /> -->
+
+        <param name="initial_pose_x" value="-9.4" />
+        <param name="initial_pose_y" value="1.8" />
+        <param name="initial_pose_a" value="1.3" />
+
+        <param name="initial_cov_xx" value="2.0 * 2.0 meters" />
+        <param name="initial_cov_yy" value="2.0 * 2.0 meters" />
+
+        <param name="min_particles" value="500" />
+        <param name="max_particles" value="5000" />
+
+        <param name="odom_frame_id" value="odom" />
+        <param name="base_frame_id" value="base_footprint" />
+    </node>
+
+    <node pkg="hector_trajectory_server" type="hector_trajectory_server" name="localization_trajectory_server">
+        <param name="source_frame_name" value="base_scan"/>
+        <param name="trajectory_update_rate" value="30"/>
+        <param name="trajectory_publish_rate" value="30"/>
+    </node>
+
+    <!-- Map server -->
+    <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)" />
+
+    <!-- move_base -->
+    <!-- <include file="$(find turtlebot3_navigation)/launch/move_base.launch">
+        <arg name="model" value="$(arg model)" />
+        <arg name="move_forward_only" value="$(arg move_forward_only)" />
+    </include> -->
+
+    <!-- rviz -->
+    <node pkg="rviz" type="rviz" name="rviz" required="true"
+        args="-d $(find ist-meic-irobo-g01)/rviz/amcl_localization.rviz" />
+
+    <!-- tf2 -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="tf2_map2odom" required="true"
+        args="0 0 0 0 0 0 map odom" />
+</launch>
+  

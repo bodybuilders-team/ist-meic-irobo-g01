@@ -8,25 +8,11 @@
   <include file="$(find turtlebot3_bringup)/launch/turtlebot3_remote.launch">
     <arg name="model" value="$(arg model)" />
   </include>
-
-  <!-- Map server -->
-
-  <!-- TF -->
   
   <!-- ROSBAG -->
   <param name="/use_sim_time" value="true"/>
   <node pkg="rosbag" type="play" name="rosbag_player" 
           args="--clock $(find turtlebot3_datasets)/data/$(arg bag_name).bag"/>
-
-  <!-- EKF robot localisation -->
-
-  <!-- AMCL-->
-
-  <!-- Groundtruth path -->
-
-  <!-- Estimated path -->
-
-  <!-- Position error publisher -->
 
   <!-- SLAM -->
   <node pkg="gmapping" name="slam" type="slam_gmapping" output="screen">

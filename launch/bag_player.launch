@@ -16,9 +16,6 @@
 
     <node pkg="tf2_ros" type="static_transform_publisher" name="tf2_map2odom" required="true"
         args="0 0 0 0 0 0 map odom" />
-    <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="tf2_odom2base_footprint"
-        required="true"
-        args="0 0 0 0 0 0 odom base_footprint" /> -->
 
     <node pkg="rviz" type="rviz" name="rviz" required="true"
         args="-d $(find ist-meic-irobo-g01)/rviz/gmapping.rviz" />

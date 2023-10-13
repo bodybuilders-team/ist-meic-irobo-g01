@@ -14,21 +14,9 @@ The project is divided in 3 mini-projects:
 - [110860 André Jesus](https://github.com/andre-j3sus)
 - [110893 Nyckollas Brandão](https://github.com/Nyckoka)
 
-Professor: Rita Cunha
+Professors: Rita Cunha and André Pereira Nogueira
 
 @IST<br>
 Master in Computer Science and Computer Engineering<br>
 Introduction to Robotics - Group 01<br>
 Winter Semester of 2023/2024
-
----
-
-## Mini Project 1
-
-The following launch files are available:
-
-* `gmapping.launch` - Maps the hallway;
-* `gmapping_provided_dataset.launch` - Maps the provided dataset;
-* `localization.launch` - Localizes the robot in the hallway;
-* `localization_provided_dataset.launch` - Localizes the robot in the provided dataset;
-* `navigation.launch` - Navigates the robot in the hallway;
