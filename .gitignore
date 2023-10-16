@@ -3,5 +3,5 @@
 .vscode/
 build/
 /maps
-/lab_notes/week_5/
+/lab_notes/week_5
 !/lab_notes/week_5/.md
