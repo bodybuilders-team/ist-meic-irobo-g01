@@ -3,3 +3,9 @@ data/*
 .vscode/
 build/
 /maps
+data/*
+!data/*.sh
+lab_notes/*
+!lab_notes/week_5
+lab_notes/week_5/*
+!lab_notes/week_5/*.md
