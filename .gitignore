@@ -1,4 +1,5 @@
-/data/*.bag
+data/*
+!data/*.sh
 .vscode/
 build/
 /maps
