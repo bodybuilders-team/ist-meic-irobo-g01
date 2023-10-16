@@ -1,7 +1,6 @@
-/data/*
+/data
 !/data/.sh
 .vscode/
 build/
 /maps
-/lab_notes/**/*.*
-!/lab_notes/**/.md
+/lab_notes/week_5/
