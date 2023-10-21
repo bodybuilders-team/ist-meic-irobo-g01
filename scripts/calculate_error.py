@@ -189,6 +189,7 @@ def main():
     plt.legend(loc='best')
     plt.show() 
 
+
     lower_bound_errors = [e[0] for e in error_data]
     errors = [e[1] for e in error_data]
     upper_bound_errors = [e[2] for e in error_data]
@@ -196,15 +197,23 @@ def main():
     plt.title("Mocap vs Estimation Error")
     plt.ylabel("Distance (mm)")
     plt.xlabel("Time (Seconds)")
-    
+
     # TODO: Change
-    # Plot each error type with a specific label
-    plt.plot(time_data, lower_bound_errors, label='Lower bound error')
+    # Use the mean of every 50th chunks of data to plot the error bars
+    lower_bound_errors_mean = [np.mean(lower_bound_errors[i:i+50]) for i in range(0, len(lower_bound_errors), 50)]
+    upper_bound_errors_mean = [np.mean(upper_bound_errors[i:i+50]) for i in range(0, len(upper_bound_errors), 50)]
+    plt.errorbar(time_data[::50], errors[::50], yerr=[lower_bound_errors_mean, upper_bound_errors_mean], alpha=.75, fmt='o', capsize=4, markersize=2, capthick=1, label='Moving Average Error Uncertainty')
+
+    # Reduce the ball size
+    plt.errorbar
+    # Show the bars with the little inter
     plt.plot(time_data, errors, label='Error')
-    plt.plot(time_data, upper_bound_errors, label='Upper bound error')
-    
     plt.legend(loc='best')
-    plt.show() 
+    plt.grid()
+    plt.show()
+
+
+
 
 if __name__ == "__main__":
     main()
